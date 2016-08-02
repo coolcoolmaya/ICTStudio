@@ -20,7 +20,6 @@
 #endif
 
 #include "ICTStudioDoc.h"
-
 #include <propkey.h>
 
 #ifdef _DEBUG
@@ -145,3 +144,14 @@ void CICTStudioDoc::Dump(CDumpContext& dc) const
 
 
 // CICTStudioDoc 命令
+
+
+BOOL CICTStudioDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+	if (!CDocument::OnOpenDocument(lpszPathName))
+		return FALSE;
+
+	// TODO:  在此添加您专用的创建代码
+	m_oriMat = cv::imread(CT2A(lpszPathName).m_psz);
+	return TRUE;
+}

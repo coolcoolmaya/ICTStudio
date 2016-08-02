@@ -14,7 +14,7 @@
 
 
 #pragma once
-
+#include <opencv2\opencv.hpp>
 
 class CICTStudioDoc : public CDocument
 {
@@ -36,6 +36,7 @@ public:
 	virtual void InitializeSearchContent();
 	virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);
 #endif // SHARED_HANDLERS
+	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 
 // 实现
 public:
@@ -55,4 +56,7 @@ protected:
 	// 用于为搜索处理程序设置搜索内容的 Helper 函数
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
+
+private:
+	cv::Mat m_oriMat;
 };

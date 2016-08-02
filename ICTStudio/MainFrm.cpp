@@ -33,6 +33,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_COMMAND(ID_VIEW_CAPTION_BAR, &CMainFrame::OnViewCaptionBar)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CAPTION_BAR, &CMainFrame::OnUpdateViewCaptionBar)
 	ON_COMMAND(ID_TOOLS_OPTIONS, &CMainFrame::OnOptions)
+	ON_COMMAND(ID_ZOOM_SLIDER, &CMainFrame::OnZoomSlider)
+	ON_UPDATE_COMMAND_UI(ID_ZOOM_SLIDER, &CMainFrame::OnUpdateZoomSlider)
 END_MESSAGE_MAP()
 
 // CMainFrame 构造/析构
@@ -52,26 +54,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CMDIFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	BOOL bNameValid;
-
 	m_wndRibbonBar.Create(this);
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
 
-	if (!m_wndStatusBar.Create(this))
+	
+	if (!CreateStatusBar())
 	{
-		TRACE0("未能创建状态栏\n");
-		return -1;      // 未能创建
+		return -1;
 	}
-
-	CString strTitlePane1;
-	CString strTitlePane2;
-	bNameValid = strTitlePane1.LoadString(IDS_STATUS_PANE1);
-	ASSERT(bNameValid);
-	bNameValid = strTitlePane2.LoadString(IDS_STATUS_PANE2);
-	ASSERT(bNameValid);
-	m_wndStatusBar.AddElement(new CMFCRibbonStatusBarPane(ID_STATUSBAR_PANE1, strTitlePane1, TRUE), strTitlePane1);
-	m_wndStatusBar.AddExtendedElement(new CMFCRibbonStatusBarPane(ID_STATUSBAR_PANE2, strTitlePane2, TRUE), strTitlePane2);
-
+	
 	// 启用 Visual Studio 2005 样式停靠窗口行为
 	CDockingManager::SetDockingMode(DT_SMART);
 	// 启用 Visual Studio 2005 样式停靠窗口自动隐藏行为
@@ -203,6 +194,34 @@ BOOL CMainFrame::CreateCaptionBar()
 	return TRUE;
 }
 
+BOOL CMainFrame::CreateStatusBar()
+{
+	BOOL bNameValid;
+	if (!m_wndStatusBar.Create(this))
+	{
+		TRACE0("未能创建状态栏\n");
+		return -1;      // 未能创建
+	}
+
+	CString strTitlePane1;
+	CString strTitlePane2;
+	bNameValid = strTitlePane1.LoadString(IDS_STATUS_PANE1);
+	ASSERT(bNameValid);
+	bNameValid = strTitlePane2.LoadString(IDS_STATUS_PANE2);
+	ASSERT(bNameValid);
+	m_wndStatusBar.AddElement(new CMFCRibbonStatusBarPane(ID_STATUSBAR_PANE1, strTitlePane1, TRUE), strTitlePane1);
+	m_wndStatusBar.AddExtendedElement(new CMFCRibbonStatusBarPane(ID_STATUSBAR_PANE2, strTitlePane2, TRUE), strTitlePane2);
+
+	// 状态栏添加缩放滑杆
+	CMFCRibbonSlider* pSlider = new CMFCRibbonSlider(ID_ZOOM_SLIDER);
+	pSlider->SetZoomButtons();
+	pSlider->SetRange(0, 200);
+	pSlider->SetPos(100);
+	m_wndStatusBar.AddExtendedElement(pSlider, _T("Zoom Slider"));
+
+	return TRUE;
+}
+
 // CMainFrame 诊断
 
 #ifdef _DEBUG
@@ -328,3 +347,17 @@ void CMainFrame::OnOptions()
 	delete pOptionsDlg;
 }
 
+
+
+void CMainFrame::OnZoomSlider()
+{
+	// TODO: 在此添加命令处理程序代码
+	TRACE0("on slider");
+}
+
+
+void CMainFrame::OnUpdateZoomSlider(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+	pCmdUI->Enable(FALSE);
+}

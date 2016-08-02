@@ -69,12 +69,16 @@ protected:
 
 	BOOL CreateOutlookBar(CMFCOutlookBar& bar, UINT uiID, CMFCShellTreeCtrl& tree, CCalendarBar& calendar, int nInitialWidth);
 	BOOL CreateCaptionBar();
+	BOOL CreateStatusBar();
 
 	int FindFocusedOutlookWnd(CMFCOutlookBarTabCtrl** ppOutlookWnd);
 
 	CMFCOutlookBarTabCtrl* FindOutlookParent(CWnd* pWnd);
 	CMFCOutlookBarTabCtrl* m_pCurrOutlookWnd;
 	CMFCOutlookBarPane*    m_pCurrOutlookPage;
+public:
+	afx_msg void OnZoomSlider();
+	afx_msg void OnUpdateZoomSlider(CCmdUI *pCmdUI);
 };
 
 

@@ -38,6 +38,9 @@ BEGIN_MESSAGE_MAP(CICTStudioView, CScrollView)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CICTStudioView::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
+	ON_UPDATE_COMMAND_UI(ID_ZOOM_SLIDER, &CICTStudioView::OnUpdateZoomSlider)
+	ON_COMMAND(ID_ZOOM_SLIDER, &CICTStudioView::OnZoomSlider)
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 // CICTStudioView 构造/析构
@@ -62,7 +65,7 @@ BOOL CICTStudioView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CICTStudioView 绘制
 
-void CICTStudioView::OnDraw(CDC* /*pDC*/)
+void CICTStudioView::OnDraw(CDC* pDC)
 {
 	CICTStudioDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -70,6 +73,25 @@ void CICTStudioView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 在此处为本机数据添加绘制代码
+	
+	auto gray = pDoc->GetGrayImage();
+	Gdiplus::Bitmap bitmap(gray.cols, gray.rows, gray.cols*gray.channels(), PixelFormat24bppRGB, gray.data);
+
+	CRect rc;
+	GetClientRect(rc);
+	Gdiplus::Bitmap bmp(int(rc.right), int(rc.bottom));
+
+	Gdiplus::Graphics bmpGraphics(&bmp);
+	// 刷新背景
+	Gdiplus::SolidBrush bkBrush(Gdiplus::Color(255, 255, 255));
+	bmpGraphics.FillRectangle(&bkBrush, 0, 0, rc.right, rc.bottom);
+	// 绘制图像
+	bmpGraphics.DrawImage(&bitmap, 0, 0);
+
+	/*Important! Create a CacheBitmap object for quick drawing*/
+	Gdiplus::Graphics graphics(pDC->GetSafeHdc());
+	Gdiplus::CachedBitmap cachedBmp(&bmp, &graphics);
+	graphics.DrawCachedBitmap(&cachedBmp, 0, 0);
 }
 
 void CICTStudioView::OnInitialUpdate()
@@ -145,3 +167,25 @@ CICTStudioDoc* CICTStudioView::GetDocument() const // 非调试版本是内联的
 
 
 // CICTStudioView 消息处理程序
+
+
+void CICTStudioView::OnUpdateZoomSlider(CCmdUI *pCmdUI)
+{
+	// TODO: 在此添加命令更新用户界面处理程序代码
+	pCmdUI->Enable();
+}
+
+void CICTStudioView::OnZoomSlider()
+{
+	// TODO: 在此添加命令处理程序代码
+	TRACE0("on slider");
+
+}
+
+
+BOOL CICTStudioView::OnEraseBkgnd(CDC* pDC)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	return TRUE;
+}

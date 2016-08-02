@@ -42,6 +42,25 @@ CICTStudioDoc::CICTStudioDoc()
 
 }
 
+cv::Mat CICTStudioDoc::GetGrayImage()
+{
+	cv::Mat grayPic;
+	if (m_oriMat.data)
+	{
+		switch (m_oriMat.channels())
+		{
+		case 3:
+			cv::cvtColor(m_oriMat, grayPic, CV_BGR2GRAY);
+			break;
+		default:
+			grayPic = m_oriMat;
+			break;
+		}
+		
+	}
+	return grayPic;
+}
+
 CICTStudioDoc::~CICTStudioDoc()
 {
 }

@@ -42,6 +42,10 @@ CICTStudioDoc::CICTStudioDoc()
 
 }
 
+CICTStudioDoc::~CICTStudioDoc()
+{
+}
+
 cv::Mat CICTStudioDoc::GetGrayImage()
 {
 	cv::Mat grayPic;
@@ -56,13 +60,14 @@ cv::Mat CICTStudioDoc::GetGrayImage()
 			grayPic = m_oriMat;
 			break;
 		}
-		
+
 	}
 	return grayPic;
 }
 
-CICTStudioDoc::~CICTStudioDoc()
+CSize CICTStudioDoc::GetDocSize() const
 {
+	return CSize(m_oriMat.cols, m_oriMat.rows);
 }
 
 BOOL CICTStudioDoc::OnNewDocument()

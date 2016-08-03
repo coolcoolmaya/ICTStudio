@@ -27,7 +27,7 @@ public:
 	cv::Mat GetGrayImage();
 // ²Ù×÷
 public:
-
+	CSize GetDocSize() const;
 // ÖØÐ´
 public:
 	virtual BOOL OnNewDocument();

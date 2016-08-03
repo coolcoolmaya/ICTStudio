@@ -75,32 +75,61 @@ void CICTStudioView::OnDraw(CDC* pDC)
 	// TODO: 在此处为本机数据添加绘制代码
 	
 	auto gray = pDoc->GetGrayImage();
-	Gdiplus::Bitmap bitmap(gray.cols, gray.rows, gray.cols*gray.channels(), PixelFormat24bppRGB, gray.data);
+	int lineBytes = (gray.step*8 + 31) / 32 * 4;
+	int depth = gray.depth();
+	int nElemSize = gray.elemSize();
+	int nStep = gray.step;
+	int nChannels = gray.channels();
 
+	CPoint scrollPt = GetScrollPosition();
+	int nScrollH = GetScrollPos(SB_HORZ);
+	int nScrollV = GetScrollPos(SB_VERT);
+	// 获取绘图区域
 	CRect rc;
 	GetClientRect(rc);
-	Gdiplus::Bitmap bmp(int(rc.right), int(rc.bottom));
 
-	Gdiplus::Graphics bmpGraphics(&bmp);
-	// 刷新背景
-	Gdiplus::SolidBrush bkBrush(Gdiplus::Color(255, 255, 255));
-	bmpGraphics.FillRectangle(&bkBrush, 0, 0, rc.right, rc.bottom);
-	// 绘制图像
-	bmpGraphics.DrawImage(&bitmap, 0, 0);
+	// 创建绘图区域bitmap
+	Gdiplus::Bitmap bkgBmp(int(rc.right), int(rc.bottom));
+	Gdiplus::Graphics bmpGraphics(&bkgBmp);
+	
+	if (CV_8U == gray.depth())
+	{
+		Gdiplus::Bitmap bitmap(gray.cols, gray.rows, lineBytes, PixelFormat8bppIndexed, gray.data);
 
+		// 修改调色板为256级灰阶调色板
+		int nPaletteSize = bitmap.GetPaletteSize();
+		Gdiplus::ColorPalette* pPalette = reinterpret_cast<Gdiplus::ColorPalette*>(new BYTE[nPaletteSize]);
+		bitmap.GetPalette(pPalette, nPaletteSize);
+		for (UINT i = 0; i < pPalette->Count; ++i)
+			pPalette->Entries[i] = Gdiplus::Color::MakeARGB(255, i, i, i);
+		pPalette->Flags = Gdiplus::PaletteFlagsGrayScale;
+		bitmap.SetPalette(pPalette);
+		delete pPalette;
+
+		// 绘制图像
+		bmpGraphics.DrawImage(&bitmap, 0, 0, scrollPt.x, scrollPt.y
+			, __min(bitmap.GetWidth() - scrollPt.x, rc.Width())
+			, __min(bitmap.GetHeight() - scrollPt.y, rc.Height())
+			, Gdiplus::UnitPixel);
+	
+	}
 	/*Important! Create a CacheBitmap object for quick drawing*/
 	Gdiplus::Graphics graphics(pDC->GetSafeHdc());
-	Gdiplus::CachedBitmap cachedBmp(&bmp, &graphics);
-	graphics.DrawCachedBitmap(&cachedBmp, 0, 0);
+	Gdiplus::CachedBitmap cachedBmp(&bkgBmp, &graphics);
+	graphics.DrawCachedBitmap(&cachedBmp, scrollPt.x, scrollPt.y);
 }
 
 void CICTStudioView::OnInitialUpdate()
 {
 	CScrollView::OnInitialUpdate();
 
-	CSize sizeTotal;
+	CSize sizeTotal(100, 100);
 	// TODO: 计算此视图的合计大小
-	sizeTotal.cx = sizeTotal.cy = 100;
+	
+	CICTStudioDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (pDoc)
+		sizeTotal = pDoc->GetDocSize();
 	SetScrollSizes(MM_TEXT, sizeTotal);
 }
 
@@ -186,6 +215,21 @@ void CICTStudioView::OnZoomSlider()
 BOOL CICTStudioView::OnEraseBkgnd(CDC* pDC)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
+	CBrush br(GetSysColor(COLOR_WINDOW));
+	FillOutsideRect(pDC, &br);
 	return TRUE;
+}
+
+
+void CICTStudioView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	CICTStudioDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (pDoc)
+	{
+		SetScrollSizes(MM_TEXT, pDoc->GetDocSize());
+		ResizeParentToFit(FALSE);
+	}
+
 }

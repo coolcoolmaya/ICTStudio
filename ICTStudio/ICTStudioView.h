@@ -58,6 +58,7 @@ public:
 	afx_msg void OnUpdateZoomSlider(CCmdUI *pCmdUI);
 	afx_msg void OnZoomSlider();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+	virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/);
 };
 
 #ifndef _DEBUG  // ICTStudioView.cpp 中的调试版本
